@@ -1,0 +1,227 @@
+# ANS Resolution Server Configuration
+# This is the default configuration file with sensible defaults.
+# All values can be overridden via environment variables using the
+# ${VAR_NAME:default_value} syntax.
+
+# Server configuration
+server:
+  host: ${HTTP_HOST:0.0.0.0}
+  port: ${HTTP_PORT:8080}
+  readTimeout: ${HTTP_READ_TIMEOUT:30s}
+  writeTimeout: ${HTTP_WRITE_TIMEOUT:30s}
+  idleTimeout: ${HTTP_IDLE_TIMEOUT:120s}
+  maxHeaderBytes: 1048576  # 1MB
+  gracefulShutdownTimeout: ${SHUTDOWN_TIMEOUT:30s}
+
+# Pluggable cache provider
+cache:
+  provider: ${CACHE_PROVIDER:memory}  # memory | redis | memcached
+  ttl:
+    default: ${CACHE_TTL_DEFAULT:300s}
+    verified: ${CACHE_TTL_VERIFIED:600s}
+    revoked: ${CACHE_TTL_REVOKED:3600s}
+    notFound: ${CACHE_TTL_NOT_FOUND:60s}
+  # Memory cache settings
+  memory:
+    maxSize: ${CACHE_MEMORY_MAX_SIZE:10000}
+    cleanupInterval: ${CACHE_MEMORY_CLEANUP:60s}
+  # Redis cache settings
+  redis:
+    address: ${REDIS_ADDRESS:localhost:6379}
+    password: ${REDIS_PASSWORD:}
+    db: ${REDIS_DB:0}
+    poolSize: ${REDIS_POOL_SIZE:10}
+    minIdleConns: ${REDIS_MIN_IDLE:5}
+    dialTimeout: ${REDIS_DIAL_TIMEOUT:5s}
+    readTimeout: ${REDIS_READ_TIMEOUT:3s}
+    writeTimeout: ${REDIS_WRITE_TIMEOUT:3s}
+    tls:
+      enabled: ${REDIS_TLS_ENABLED:false}
+      insecureSkipVerify: ${REDIS_TLS_SKIP_VERIFY:false}
+  # Memcached settings
+  memcached:
+    servers:
+      - ${MEMCACHED_SERVER_1:localhost:11211}
+    timeout: ${MEMCACHED_TIMEOUT:100ms}
+    maxIdleConns: ${MEMCACHED_MAX_IDLE:10}
+
+# Pluggable message queue for registry events
+queue:
+  enabled: ${QUEUE_ENABLED:false}  # Queue not implemented yet
+  provider: ${QUEUE_PROVIDER:memory}  # memory | redis-streams | kafka | nats
+  bufferSize: ${QUEUE_BUFFER_SIZE:1000}
+  # Redis Streams settings
+  redis-streams:
+    address: ${REDIS_ADDRESS:localhost:6379}
+    password: ${REDIS_PASSWORD:}
+    stream: ${REDIS_STREAM_NAME:ans:events}
+    consumerGroup: ${REDIS_CONSUMER_GROUP:resolver-group}
+    consumer: ${REDIS_CONSUMER_NAME:resolver-1}
+    blockTimeout: ${REDIS_BLOCK_TIMEOUT:5s}
+    batchSize: ${REDIS_BATCH_SIZE:100}
+  # Kafka settings
+  kafka:
+    brokers:
+      - ${KAFKA_BROKER_1:localhost:9092}
+    topic: ${KAFKA_TOPIC:ans.registry.events}
+    groupId: ${KAFKA_GROUP_ID:ans-resolver}
+    autoOffsetReset: ${KAFKA_OFFSET_RESET:earliest}
+    sessionTimeout: ${KAFKA_SESSION_TIMEOUT:30s}
+    tls:
+      enabled: ${KAFKA_TLS_ENABLED:false}
+    sasl:
+      enabled: ${KAFKA_SASL_ENABLED:false}
+      mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      username: ${KAFKA_SASL_USERNAME:}
+      password: ${KAFKA_SASL_PASSWORD:}
+  # NATS settings
+  nats:
+    url: ${NATS_URL:nats://localhost:4222}
+    subject: ${NATS_SUBJECT:ans.registry.events}
+    queue: ${NATS_QUEUE:resolver}
+    durableName: ${NATS_DURABLE:resolver-durable}
+    tls:
+      enabled: ${NATS_TLS_ENABLED:false}
+
+# Registry adapters (multiple registries supported)
+registries:
+  - name: primary
+    type: ${REGISTRY_PRIMARY_TYPE:ans-registry}  # ans-registry | veritrust | mock
+    enabled: ${REGISTRY_PRIMARY_ENABLED:true}
+    priority: 1
+    timeout: ${REGISTRY_PRIMARY_TIMEOUT:10s}
+    retries: ${REGISTRY_PRIMARY_RETRIES:3}
+    retryBackoff: ${REGISTRY_PRIMARY_RETRY_BACKOFF:1s}
+    config:
+      baseUrl: ${ANS_REGISTRY_URL:https://registry.ans.io}
+      apiVersion: v1
+      events:
+        enabled: ${ANS_REGISTRY_EVENTS_ENABLED:true}
+        endpoint: ${ANS_REGISTRY_EVENTS_URL:https://events.ans.io}
+      auth:
+        type: ${ANS_REGISTRY_AUTH_TYPE:none}  # none | api-key | oauth2 | mtls
+        apiKey: ${ANS_REGISTRY_API_KEY:}
+  # Example secondary registry (disabled by default)
+  - name: secondary
+    type: mock
+    enabled: ${REGISTRY_SECONDARY_ENABLED:false}
+    priority: 2
+    timeout: 5s
+    retries: 2
+    config:
+      mockDelay: 10ms
+
+# Trust and verification settings
+trust:
+  provider: ${TRUST_PROVIDER:file}  # file | vault | k8s-secret
+  verification:
+    enabled: ${TRUST_VERIFICATION_ENABLED:true}
+    requireSignature: ${TRUST_REQUIRE_SIGNATURE:true}
+    requireMerkleProof: ${TRUST_REQUIRE_MERKLE_PROOF:true}
+    checkRevocation: ${TRUST_CHECK_REVOCATION:true}
+    allowExpiredGracePeriod: ${TRUST_EXPIRED_GRACE_PERIOD:5m}
+    ocsp:
+      enabled: ${OCSP_ENABLED:true}
+      timeout: ${OCSP_TIMEOUT:5s}
+      cacheTimeout: ${OCSP_CACHE_TIMEOUT:1h}
+    crl:
+      enabled: ${CRL_ENABLED:true}
+      cacheTimeout: ${CRL_CACHE_TIMEOUT:24h}
+  # File-based trust store
+  file:
+    trustedRootsFile: ${TRUST_ROOTS_FILE:/etc/ans/trust/roots.pem}
+    trustedRegistrarsFile: ${TRUST_REGISTRARS_FILE:/etc/ans/trust/registrars.json}
+    refreshInterval: ${TRUST_REFRESH_INTERVAL:1h}
+  # Vault-based trust store
+  vault:
+    address: ${VAULT_ADDR:https://vault:8200}
+    authMethod: ${VAULT_AUTH_METHOD:kubernetes}  # kubernetes | token | approle
+    token: ${VAULT_TOKEN:}
+    role: ${VAULT_ROLE:ans-resolver}
+    secretPath: ${VAULT_SECRET_PATH:secret/data/ans/trust}
+    tlsSkipVerify: ${VAULT_TLS_SKIP_VERIFY:false}
+  # Kubernetes secret-based trust store
+  k8s-secret:
+    namespace: ${K8S_NAMESPACE:ans-system}
+    secretName: ${K8S_TRUST_SECRET:ans-trust-bundle}
+    rootsKey: ${K8S_ROOTS_KEY:roots.pem}
+    registrarsKey: ${K8S_REGISTRARS_KEY:registrars.json}
+
+# Policy engine
+policy:
+  enabled: ${POLICY_ENABLED:true}
+  defaultAction: ${POLICY_DEFAULT_ACTION:allow}  # allow | deny
+  rules:
+    - name: protocol-allowlist
+      enabled: true
+      type: allowlist
+      field: protocol
+      values:
+        - a2a
+        - mcp
+        - acp
+        - https
+    - name: block-revoked
+      enabled: true
+      type: denylist
+      field: status
+      values:
+        - revoked
+    - name: block-deprecated
+      enabled: ${POLICY_BLOCK_DEPRECATED:false}
+      type: denylist
+      field: status
+      values:
+        - deprecated
+
+# Rate limiting
+rateLimit:
+  enabled: ${RATE_LIMIT_ENABLED:true}
+  provider: ${RATE_LIMIT_PROVIDER:memory}  # memory | redis
+  keyExtractor: ${RATE_LIMIT_KEY:ip}  # ip | api-key | client-cert
+  limits:
+    anonymous:
+      requests: ${RATE_LIMIT_ANON_REQUESTS:100}
+      window: ${RATE_LIMIT_ANON_WINDOW:1m}
+    authenticated:
+      requests: ${RATE_LIMIT_AUTH_REQUESTS:1000}
+      window: ${RATE_LIMIT_AUTH_WINDOW:1m}
+    verified-agent:
+      requests: ${RATE_LIMIT_AGENT_REQUESTS:10000}
+      window: ${RATE_LIMIT_AGENT_WINDOW:1m}
+  redis:
+    address: ${REDIS_ADDRESS:localhost:6379}
+    keyPrefix: ${RATE_LIMIT_KEY_PREFIX:ratelimit:}
+
+# Observability
+telemetry:
+  logging:
+    level: ${LOG_LEVEL:info}  # debug | info | warn | error
+    format: ${LOG_FORMAT:json}  # json | text | pretty
+    output: ${LOG_OUTPUT:stdout}  # stdout | stderr | file
+    file:
+      path: ${LOG_FILE_PATH:/var/log/ans/resolver.log}
+      maxSize: ${LOG_FILE_MAX_SIZE:100}  # MB
+      maxBackups: ${LOG_FILE_MAX_BACKUPS:3}
+      maxAge: ${LOG_FILE_MAX_AGE:7}  # days
+      compress: ${LOG_FILE_COMPRESS:true}
+  metrics:
+    enabled: ${METRICS_ENABLED:true}
+    host: ${METRICS_HOST:0.0.0.0}
+    port: ${METRICS_PORT:9091}
+    path: ${METRICS_PATH:/metrics}
+    namespace: ${METRICS_NAMESPACE:ans}
+    subsystem: ${METRICS_SUBSYSTEM:resolver}
+  tracing:
+    enabled: ${TRACING_ENABLED:false}
+    provider: ${TRACING_PROVIDER:otlp}  # otlp | jaeger | zipkin
+    sampleRate: ${TRACING_SAMPLE_RATE:0.1}
+    serviceName: ${TRACING_SERVICE_NAME:ans-resolver}
+    otlp:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:localhost:4317}
+      insecure: ${OTEL_INSECURE:true}
+      headers: ${OTEL_HEADERS:}
+    jaeger:
+      endpoint: ${JAEGER_ENDPOINT:http://localhost:14268/api/traces}
+      agentHost: ${JAEGER_AGENT_HOST:localhost}
+      agentPort: ${JAEGER_AGENT_PORT:6831}

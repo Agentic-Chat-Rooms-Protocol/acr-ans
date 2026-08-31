@@ -1,0 +1,104 @@
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - unparam
+    - unconvert
+    - goconst
+    - gocyclo
+    - gosec
+    - nilerr
+    - prealloc
+  disable:
+    - revive  # Too noisy with unused-parameter warnings
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  
+  misspell:
+    locale: US
+  
+  revive:
+    severity: warning
+    rules:
+      - name: exported
+        disabled: false
+      - name: error-return
+        disabled: false
+      - name: error-naming
+        disabled: false
+      - name: if-return
+        disabled: false
+      # Disable noisy rules
+      - name: unused-parameter
+        disabled: true
+      - name: empty-block
+        disabled: true
+      - name: indent-error-flow
+        disabled: true
+  
+  gosec:
+    excludes:
+      - G104 # Audit errors not checked
+      - G204 # Subprocess launched with variable
+
+  staticcheck:
+    checks: ["all", "-QF1003"]  # Exclude tagged switch suggestions
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  
+  exclude-rules:
+    # Exclude some linters from running on test files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - gosec
+        - goconst
+    
+    # Exclude known linters from partially hard-vendored code
+    - path: vendor/
+      linters:
+        - staticcheck
+        - gosec
+        - gocritic
+    
+    # Exclude noisy revive rules globally
+    - linters:
+        - revive
+      text: "unused-parameter"
+    
+    - linters:
+        - revive
+      text: "empty-block"
+    
+    - linters:
+        - revive
+      text: "indent-error-flow"
+    
+    # Exclude staticcheck tagged switch suggestion
+    - linters:
+        - staticcheck
+      text: "QF1003"

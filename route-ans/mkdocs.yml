@@ -1,0 +1,90 @@
+site_name: Route ANS
+site_description: Complete API reference for Route ANS, an Agent Name System (ANS) resolution server.
+site_author: Route ANS Team
+repo_url: https://github.com/route-ans/route-ans
+
+theme:
+  logo: assets/logo.png
+  favicon: assets/logo.ico
+  name: material
+  palette:
+    - scheme: default
+      primary: blue grey
+      accent: blue grey
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue grey
+      accent: blue grey
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - md_in_html
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js
+
+nav:
+  - Home: index.md
+  
+  - Getting Started:
+      - Quick Start: getting-started.md
+      - Installation: installation.md
+      - Basic Concepts: concepts.md
+      - Tutorial: tutorial.md
+  
+  - Usage:
+      - Examples: examples.md
+      - Swagger API: swagger/index.html
+  
+  - Configuration:
+      - Configuration Reference: configuration.md
+  
+  - Operations:
+      - Deployment: deployment.md
+      - Monitoring: monitoring.md
+      - Security: security.md
+      - Troubleshooting: troubleshooting.md
+  
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Components: architecture/components.md
+      - Resolution Flow: architecture/resolution-flow.md
+      - ANS Specification: architecture/ans-spec.md
+  
+  - Development:
+      - Extending: development/extending.md
+      - Testing: development/testing.md
+  
+  - Reference:
+      - Version Negotiation: reference/version-negotiation.md
+      - Registry Adapters: reference/registry-adapters.md
+      - Cache Providers: reference/cache-providers.md
+      - Trust Verification: reference/trust-verification.md

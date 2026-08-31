@@ -1,0 +1,193 @@
+basePath: /v1
+definitions:
+  server.BatchResolveRequest:
+    properties:
+      names:
+        items:
+          type: string
+        type: array
+    type: object
+  server.BatchResolveResponse:
+    properties:
+      results:
+        additionalProperties:
+          $ref: '#/definitions/server.ResolutionResponse'
+        type: object
+    type: object
+  server.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  server.ResolutionResponse:
+    properties:
+      agent:
+        type: string
+      cached:
+        type: boolean
+      certFingerprint:
+        type: string
+      endpoint:
+        type: string
+      error:
+        type: string
+      expiresAt:
+        type: string
+      protocol:
+        type: string
+      protocolExtensions:
+        additionalProperties: true
+        type: object
+      status:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: Route ANS Team
+    url: https://github.com/route-ans/route-ans
+  description: High-performance, cryptographically-verified resolution of ANSName
+    identifiers to agent endpoints.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  termsOfService: https://github.com/route-ans/route-ans
+  title: Route ANS API
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      description: Returns server health status and version. Use for liveness probes.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Health check
+      tags:
+      - Health
+  /ready:
+    get:
+      description: Checks if server can accept traffic by verifying registry connectivity.
+        Use for readiness probes.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Readiness check
+      tags:
+      - Health
+  /resolve:
+    get:
+      description: Resolves an ANSName to its verified endpoint with optional version
+        negotiation. Performs cryptographic verification and caches results. Use this
+        for agent discovery and connection establishment.
+      parameters:
+      - description: The full ANSName to resolve
+        example: mcp://agent.example.com
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: Version range for negotiation (e.g., '>=1.0.0', '^1.2.3', '~1.0.0',
+          '1.x', '*')
+        in: query
+        name: version
+        type: string
+      - description: Bypass cache and force fresh lookup
+        in: query
+        name: force
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.ResolutionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Resolve ANSName to endpoint
+      tags:
+      - Resolution
+  /resolve/batch:
+    post:
+      consumes:
+      - application/json
+      description: Resolves multiple ANSNames in parallel for efficiency. Returns
+        results for all names, including errors. Use when discovering multiple agents
+        simultaneously.
+      parameters:
+      - description: Batch resolve request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.BatchResolveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.BatchResolveResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Batch resolve multiple ANSNames
+      tags:
+      - Resolution
+  /stats:
+    get:
+      description: Returns operational metrics including cache hit rates, queue depth,
+        and resolution counts. Use for monitoring and observability.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Get resolver statistics
+      tags:
+      - Stats
+schemes:
+- http
+- https
+swagger: "2.0"

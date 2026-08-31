@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: route-ans-config
+  namespace: route-ans
+  labels:
+    app: route-ans
+data:
+  # Redis connection
+  redis.address: "redis-master.ans-system.svc.cluster.local:6379"
+  
+  # Configuration file
+  resolver.yaml: |
+    server:
+      http:
+        host: "0.0.0.0"
+        port: 8080
+        readTimeout: 30s
+        writeTimeout: 30s
+      grpc:
+        enabled: false
+
+    cache:
+      provider: ${CACHE_PROVIDER:redis}
+      ttl:
+        default: 300s
+        verified: 600s
+        revoked: 3600s
+      redis:
+        address: ${REDIS_ADDRESS:redis:6379}
+        password: ${REDIS_PASSWORD:}
+        poolSize: 10
+
+    store:
+      provider: memory
+
+    registries:
+      - name: primary
+        type: godaddy
+        enabled: true
+        priority: 1
+        timeout: 10s
+        retries: 3
+        config:
+          baseUrl: ${GODADDY_API_URL:https://api.godaddy.com/v1}
+          apiKey: ${GODADDY_API_KEY}
+          apiSecret: ${GODADDY_API_SECRET}
+          events:
+            enabled: true
+
+    trust:
+      provider: file
+      verification:
+        enabled: true
+        requireSignature: true
+        requireMerkleProof: true
+        checkRevocation: true
+      file:
+        trustedRootsFile: /etc/ans/trust/roots.pem
+        trustedRegistrarsFile: /etc/ans/trust/registrars.json
+
+    policy:
+      enabled: true
+      defaultAction: allow
+      rules:
+        - name: protocol-allowlist
+          enabled: true
+          type: allowlist
+          field: protocol
+          values: [a2a, mcp, acp, https]
+        - name: block-revoked
+          enabled: true
+          type: denylist
+          field: status
+          values: [revoked]
+
+    rateLimit:
+      enabled: true
+      provider: memory
+      limits:
+        anonymous:
+          requests: 100
+          window: 1m
+        authenticated:
+          requests: 1000
+          window: 1m
+
+    telemetry:
+      logging:
+        level: ${LOG_LEVEL:info}
+        format: ${LOG_FORMAT:json}
+      metrics:
+        enabled: true
+        port: 9091
+        path: /metrics
+      tracing:
+        enabled: ${TRACING_ENABLED:false}
+        provider: otlp
+        sampleRate: 0.1
+        serviceName: route-ans

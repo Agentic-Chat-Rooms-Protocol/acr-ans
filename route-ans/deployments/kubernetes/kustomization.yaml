@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: route-ans
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+
+commonLabels:
+  app.kubernetes.io/name: route-ans
+  app.kubernetes.io/part-of: ans
+  app.kubernetes.io/managed-by: kustomize
+
+images:
+  - name: route-ans
+    newName: ghcr.io/route-ans/route-ans
+    newTag: latest
+
+configMapGenerator:
+  - name: route-ans-config
+    behavior: merge
+    literals:
+      - LOG_LEVEL=info
+
+secretGenerator:
+  - name: route-ans-secrets
+    type: Opaque
+    literals:
+      - redis.password=changeme

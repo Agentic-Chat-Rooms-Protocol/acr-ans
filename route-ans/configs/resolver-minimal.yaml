@@ -1,0 +1,56 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  readTimeout: 30s
+  writeTimeout: 30s
+  idleTimeout: 120s
+  maxHeaderBytes: 1048576
+  gracefulShutdownTimeout: 30s
+
+cache:
+  provider: memory
+  ttl:
+    default: 300s
+    verified: 600s
+    revoked: 3600s
+  memory:
+    maxSize: 10000
+    cleanupInterval: 60s
+
+queue:
+  enabled: false  # Queue not implemented yet
+  provider: memory
+  bufferSize: 1000
+
+registries:
+  - name: primary
+    type: mock
+    enabled: true
+    priority: 1
+    timeout: 10s
+    retries: 3
+    config: {}
+
+trust:
+  provider: mock
+  verification:
+    enabled: false
+
+policy:
+  enabled: true
+  defaultAction: allow
+  rules: []
+
+rateLimit:
+  enabled: false
+
+telemetry:
+  logging:
+    level: debug
+    format: text
+  metrics:
+    enabled: true
+    port: 9091
+    path: /metrics
+  tracing:
+    enabled: false

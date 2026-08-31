@@ -1,0 +1,72 @@
+# ANS Resolution Server - Minimal Configuration with GoDaddy
+# This configuration uses only essential features, disabling all future-proofing
+
+# Server configuration
+server:
+  host: 0.0.0.0
+  port: 8080
+  readTimeout: 30s
+  writeTimeout: 30s
+  idleTimeout: 120s
+  maxHeaderBytes: 1048576
+  gracefulShutdownTimeout: 30s
+
+# Cache - In-memory only, no external dependencies
+cache:
+  provider: memory
+  ttl:
+    default: 300s      # 5 minutes
+    verified: 600s     # 10 minutes
+    revoked: 3600s     # 1 hour
+    notFound: 60s      # 1 minute
+  memory:
+    maxSize: 10000
+    cleanupInterval: 60s
+
+# Queue - DISABLED (not needed for single-instance resolver)
+queue:
+  enabled: false       # ← Explicitly disable queue
+  provider: memory
+
+# Registry - GoDaddy only
+registries:
+  - name: godaddy
+    type: godaddy
+    enabled: true
+    priority: 1
+    timeout: 10s
+    retries: 3
+    retryBackoff: 1s
+    config:
+      baseURL: "https://api.godaddy.com/v1"
+      apiKey: "${GODADDY_API_KEY}"
+      apiSecret: "${GODADDY_API_SECRET}"
+
+# Trust - DISABLED (skip DNS checks, OCSP, etc.)
+trust:
+  provider: file
+  verification:
+    enabled: false     # ← Disable all trust verification
+    mode: disabled
+    requireSignature: false
+    requireMerkleProof: false
+    checkRevocation: false
+
+# Rate limiting - Basic protection only
+rateLimit:
+  enabled: true
+  limits:
+    anonymous:
+      requests: 100
+      window: 1m
+
+# Telemetry - Minimal logging, no metrics/tracing
+telemetry:
+  logging:
+    level: info
+    format: json
+    output: stdout
+  metrics:
+    enabled: false     # ← Disable Prometheus metrics
+  tracing:
+    enabled: false     # ← Disable distributed tracing

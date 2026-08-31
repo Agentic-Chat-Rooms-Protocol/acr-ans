@@ -1,0 +1,105 @@
+# ANS Resolution Server Configuration - GoDaddy Registry
+# This configuration connects to GoDaddy's ANS Registry
+
+# Server configuration
+server:
+  host: 0.0.0.0
+  port: 8080
+  readTimeout: 30s
+  writeTimeout: 30s
+  idleTimeout: 120s
+  maxHeaderBytes: 1048576  # 1MB
+  gracefulShutdownTimeout: 30s
+
+# Cache configuration
+cache:
+  provider: memory
+  ttl:
+    default: 300s      # 5 minutes
+    verified: 600s     # 10 minutes
+    revoked: 3600s     # 1 hour
+    notFound: 60s      # 1 minute
+  memory:
+    maxSize: 10000
+    cleanupInterval: 60s
+
+# Queue configuration (for async operations)
+queue:
+  enabled: false  # Queue not implemented yet
+  provider: memory
+
+# Registry adapters - GoDaddy configuration
+registries:
+  - name: godaddy
+    type: godaddy
+    enabled: true
+    priority: 1
+    timeout: 10s
+    retries: 3
+    retryBackoff: 1s
+    config:
+      # GoDaddy API configuration
+      baseURL: "https://api.godaddy.com/v1"
+      # For testing with OTE (Operational Test Environment), use:
+      # baseURL: "https://api.ote-godaddy.com/v1"
+      
+      # Your GoDaddy API credentials
+      # Get these from: https://developer.godaddy.com/keys
+      apiKey: "${GODADDY_API_KEY}"
+      apiSecret: "${GODADDY_API_SECRET}"
+
+# Trust and verification settings
+trust:
+  provider: file
+  verification:
+    enabled: false
+    mode: permissive  # permissive | strict | disabled
+    requireSignature: true
+    requireMerkleProof: false  # GoDaddy may not support Merkle proofs yet
+    checkRevocation: false
+    allowExpiredGracePeriod: 24h
+    ocsp:
+      enabled: false
+      timeout: 5s
+    crl:
+      enabled: false
+      cacheTimeout: 1h
+  file:
+    trustedRootsFile: /etc/ans/trusted-roots.pem
+    trustedRegistrarsFile: /etc/ans/trusted-registrars.json
+
+# Rate limiting
+rateLimit:
+  enabled: true
+  limits:
+    anonymous:
+      requests: 100
+      window: 1m
+    authenticated:
+      requests: 1000
+      window: 1m
+
+# Telemetry configuration
+telemetry:
+  logging:
+    level: info        # debug | info | warn | error
+    format: json       # json | text
+    output: stdout     # stdout | stderr | file
+    file:
+      path: /var/log/ans-resolver/resolver.log
+      maxSize: 100     # MB
+      maxBackups: 3
+      maxAge: 28       # days
+      compress: true
+  metrics:
+    enabled: true
+    namespace: ans
+    subsystem: resolver
+    path: /metrics
+    port: 9091
+    host: 0.0.0.0
+  tracing:
+    enabled: false
+    provider: otlp     # otlp | jaeger | zipkin
+    endpoint: localhost:4317
+    samplingRate: 0.1

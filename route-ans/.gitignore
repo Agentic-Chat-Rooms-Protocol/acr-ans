@@ -1,0 +1,10 @@
+# Certificate files
+certs/
+*.key
+*.csr
+*.crt
+*.pem
+.env
+
+ans-resolver
+site/
