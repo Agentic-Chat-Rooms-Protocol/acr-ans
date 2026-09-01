@@ -1,4 +1,5 @@
-# Agent Guidelines for acr-ans
+# Agent Guidelines - acr-ans
 
-This repository is maintained as part of the Agentic Chat Rooms (ACR) Protocol ecosystem.
-Follow modular zero-trust patterns and RFC 8785 canonical JSON formatting.
+## Agent Name Service Discipline
+1. **Deterministic Handle Resolution**: Map `.acr` human-readable handles to immutable W3C DIDs (`did:key:*`).
+2. **State Chain Anchoring**: Anchor registration records and ownership updates to cryptographic Merkle trees.
