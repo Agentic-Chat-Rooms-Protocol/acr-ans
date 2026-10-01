@@ -1,0 +1,19 @@
+{
+  "name": "@acr-js/ans",
+  "version": "1.0.0",
+  "description": "Agent Name Service (ANS) decentralized naming, DID registry, and rotation resolver",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types scripts/test_rotation_resolver.mjs"
+  },
+  "keywords": [
+    "acr",
+    "ans",
+    "did",
+    "identity",
+    "rotation",
+    "resolver"
+  ],
+  "author": "ACR Protocol",
+  "license": "Apache-2.0"
+}
