@@ -65,7 +65,7 @@ Configures the HTTP server that handles incoming resolution requests.
 | Field | Type | Default | Description | Status |
 |-------|------|---------|-------------|--------|
 | `host` | string | 0.0.0.0 | Server bind address | 🟢 Required |
-| `port` | int | 8080 | Server port | 🟢 Required |
+| `port` | int | 8080 | Route-ANS HTTP API listener port (distinct from `acr-core` daemon on `127.0.0.1:20443`) | 🟢 Required |
 | `readTimeout` | duration | 30s | Maximum duration for reading request | 🟢 |
 | `writeTimeout` | duration | 30s | Maximum duration for writing response | 🟢 |
 | `idleTimeout` | duration | 120s | Maximum idle connection duration | 🟢 |

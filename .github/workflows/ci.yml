@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ts-tests:
+    name: TypeScript Rotation & WoT Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test
+
+  go-tests:
+    name: Route-ANS Go Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: route-ans
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+          cache-dependency-path: route-ans/go.sum
+      - run: go test -mod=mod ./...

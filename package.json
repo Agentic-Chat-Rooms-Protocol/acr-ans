@@ -1,6 +1,6 @@
 {
   "name": "@acr-js/ans",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Agent Name Service (ANS) decentralized naming, DID registry, and rotation resolver",
   "type": "module",
   "scripts": {

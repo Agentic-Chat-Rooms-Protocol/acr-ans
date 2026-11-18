@@ -58,7 +58,7 @@ func TestACRAdapter_LookupAndVerify(t *testing.T) {
 	}
 
 	// 2. Lookup by ANSName
-	name, err := ansname.Parse("acr://consensusLead.deliberation.PID-ACR.v1.0.0.acr.network")
+	name, err := ansname.Parse("acr://consensusLead.deliberation.PID-ACR.v1.0.0.agentchatrooms.dev")
 	if err != nil {
 		t.Fatalf("failed to parse ansname: %v", err)
 	}

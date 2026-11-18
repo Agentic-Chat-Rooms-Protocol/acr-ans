@@ -3,10 +3,10 @@
 # All values can be overridden via environment variables using the
 # ${VAR_NAME:default_value} syntax.
 
-# Server configuration
+# Server configuration (Route-ANS HTTP resolver listens on 8080; acr-core daemon runs on 127.0.0.1:20443)
 server:
   host: ${HTTP_HOST:0.0.0.0}
-  port: ${HTTP_PORT:8080}
+  port: ${HTTP_PORT:8080}  # Route-ANS HTTP API port (distinct from acr-core 20443)
   readTimeout: ${HTTP_READ_TIMEOUT:30s}
   writeTimeout: ${HTTP_WRITE_TIMEOUT:30s}
   idleTimeout: ${HTTP_IDLE_TIMEOUT:120s}

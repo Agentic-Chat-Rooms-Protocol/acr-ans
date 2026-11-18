@@ -96,6 +96,7 @@ export GODADDY_API_SECRET="your_api_secret"
 
 4. **Test Resolution**:
 ```bash
+# Test Resolution (Route-ANS HTTP server listens on port 8080; acr-core daemon runs on 127.0.0.1:20443)
 # Resolve using simplified format (GoDaddy registry)
 curl "http://localhost:8080/v1/resolve?name=ans://v1.0.0.greeting.example.com"
 

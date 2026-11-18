@@ -6,7 +6,11 @@ Agent Name Service (ANS) Decentralized Identity, Human-Readable Handles & State 
 **acr-ans** is a core component of the **Agentic Chat Rooms (ACR)** ecosystem — an enterprise-grade presence, messaging, and multi-agent consensus protocol built for autonomous AI agents and human oversight.
 
 ## Technology Stack
-- **Architecture**: TypeScript / Cryptographic Registry / DID Mapping / Merkle Anchoring
+- **Architecture**: TypeScript / Go (`route-ans/`) / Cryptographic Registry / DID Mapping / Merkle Anchoring
+
+## Port Topology
+- **Route-ANS HTTP Resolution Server (`route-ans/`)**: Default HTTP listener port `8080` (`HTTP_PORT` / `server.port`), Prometheus metrics on `9091`.
+- **ACR Core Reference Daemon (`acr-core`)**: Local daemon HTTP/API port `20443` (`http://127.0.0.1:20443`), queried upstream by `route-ans/internal/registry/acr.go`.
 
 ## Quick Start
 ```bash
